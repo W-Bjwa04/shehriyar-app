@@ -12,6 +12,28 @@ function n(v) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function arr3(source, fallback = 0) {
+  if (Array.isArray(source)) {
+    const out = [fallback, fallback, fallback];
+    for (let i = 0; i < NUM_PRODUCTS; i += 1) {
+      out[i] = source[i] ?? fallback;
+    }
+    return out;
+  }
+  return [fallback, fallback, fallback];
+}
+
+function arr3Bool(source) {
+  if (Array.isArray(source)) {
+    const out = [false, false, false];
+    for (let i = 0; i < NUM_PRODUCTS; i += 1) {
+      out[i] = !!source[i];
+    }
+    return out;
+  }
+  return [false, false, false];
+}
+
 export default function TopazClassicForm({ groupNumber: propGroup, companyNumber: propCompany, onSubmitSuccess }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -89,19 +111,19 @@ export default function TopazClassicForm({ groupNumber: propGroup, companyNumber
           year: data?.year || prev.year,
           quarter: data?.quarter || prev.quarter,
 
-          majorProductImprovement: d.majorProductImprovement || prev.majorProductImprovement,
-          pricesExport: d.prices?.export || prev.pricesExport,
-          pricesHome: d.prices?.home || prev.pricesHome,
-          advTradePress: d.advertising?.tradePress || prev.advTradePress,
-          advPressTV: d.advertising?.pressTV || prev.advPressTV,
-          advMerchandising: d.advertising?.merchandising || prev.advMerchandising,
+          majorProductImprovement: arr3Bool(d.majorProductImprovement),
+          pricesExport: arr3(d.prices?.export),
+          pricesHome: arr3(d.prices?.home),
+          advTradePress: arr3(d.advertising?.tradePress),
+          advPressTV: arr3(d.advertising?.pressTV),
+          advMerchandising: arr3(d.advertising?.merchandising),
 
-          assemblyTime: d.assemblyTime || prev.assemblyTime,
-          deliveryExport: d.deliverySchedule?.export || prev.deliveryExport,
-          deliverySouth: d.deliverySchedule?.south || prev.deliverySouth,
-          deliveryWest: d.deliverySchedule?.west || prev.deliveryWest,
-          deliveryNorth: d.deliverySchedule?.north || prev.deliveryNorth,
-          researchExpenditure: d.researchExpenditure || prev.researchExpenditure,
+          assemblyTime: arr3(d.assemblyTime, 120),
+          deliveryExport: arr3(d.deliverySchedule?.export),
+          deliverySouth: arr3(d.deliverySchedule?.south),
+          deliveryWest: arr3(d.deliverySchedule?.west),
+          deliveryNorth: arr3(d.deliverySchedule?.north),
+          researchExpenditure: arr3(d.researchExpenditure),
 
           spExport: d.salespeople?.export || prev.spExport,
           spSouth: d.salespeople?.south || prev.spSouth,
@@ -152,7 +174,8 @@ export default function TopazClassicForm({ groupNumber: propGroup, companyNumber
 
   const setArr = (key, idx, value) => {
     setForm((prev) => {
-      const next = [...prev[key]];
+      const base = Array.isArray(prev[key]) ? prev[key] : [0, 0, 0];
+      const next = [...base];
       next[idx] = value;
       return { ...prev, [key]: next };
     });
