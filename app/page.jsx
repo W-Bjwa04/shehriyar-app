@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import {
   LayoutDashboard, ClipboardList, FileText, TrendingUp, Menu, X,
-  ShieldCheck, Landmark, FlaskConical, ChevronRight,
+  ShieldCheck, Landmark, FlaskConical, ChevronRight, NotebookPen,
 } from 'lucide-react';
 import Dashboard from '@/components/Dashboard';
 import DecisionForm from '@/components/DecisionForm';
@@ -13,11 +13,13 @@ import Analytics from '@/components/Analytics';
 import ControlCenter from '@/components/ControlCenter';
 import TreasuryLab from '@/components/TreasuryLab';
 import ScenarioLab from '@/components/ScenarioLab';
+import TopazClassicForm from '@/components/TopazClassicForm';
 
 function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onGroupChange, onCompanyChange, onClose, isOpen }) {
   const nav = (target) => { onNavigate(target); if (onClose) onClose(); };
 
   const quickLinks = [
+    { id: 'classic', label: 'Topaz Classic Sheet', section: 'Core' },
     { id: 'dashboard', label: 'Overview', section: 'Core' },
     { id: 'form', label: 'Decision Form', section: 'Core' },
     { id: 'report', label: 'Management Report', section: 'Core' },
@@ -50,6 +52,9 @@ function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onG
       {/* Nav */}
       <nav aria-label="Pages">
         <div className="s-section-label">NAVIGATION</div>
+        <button className={`s-link${view === 'classic' ? ' active' : ''}`} onClick={() => nav('classic')} aria-current={view === 'classic' ? 'page' : undefined}>
+          <NotebookPen size={15} aria-hidden="true" /> Topaz Classic Sheet
+        </button>
         <button className={`s-link${view === 'dashboard' ? ' active' : ''}`} onClick={() => nav('dashboard')} aria-current={view === 'dashboard' ? 'page' : undefined}>
           <LayoutDashboard size={15} aria-hidden="true" /> Overview
         </button>
@@ -142,7 +147,7 @@ function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onG
 }
 
 export default function HomePage() {
-  const [view, setView] = useState('dashboard');
+  const [view, setView] = useState('classic');
   const [reportData, setReportData] = useState(null);
   const [groupNumber, setGroupNumber] = useState(1);
   const [companyNumber, setCompanyNumber] = useState(1);
@@ -163,6 +168,7 @@ export default function HomePage() {
   };
 
   const viewTitles = {
+    classic: 'Topaz Classic Sheet',
     dashboard: 'Overview',
     form: 'Submit Decisions',
     report: 'Management Report',
@@ -215,6 +221,13 @@ export default function HomePage() {
           style={{ flex: 1, padding: '32px 36px', background: '#F8FAFC' }}
           aria-label={viewTitles[view]}
         >
+          {view === 'classic' && (
+            <TopazClassicForm
+              groupNumber={groupNumber}
+              companyNumber={companyNumber}
+              onSubmitSuccess={handleSubmitSuccess}
+            />
+          )}
           {view === 'dashboard' && (
             <Dashboard onNavigate={navigate} groupNumber={groupNumber} companyNumber={companyNumber}
               onGroupChange={setGroupNumber} onCompanyChange={setCompanyNumber} />
