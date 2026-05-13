@@ -2,14 +2,31 @@
 
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
-import { LayoutDashboard, ClipboardList, FileText, TrendingUp, Menu, X } from 'lucide-react';
+import {
+  LayoutDashboard, ClipboardList, FileText, TrendingUp, Menu, X,
+  ShieldCheck, Landmark, FlaskConical, ChevronRight,
+} from 'lucide-react';
 import Dashboard from '@/components/Dashboard';
 import DecisionForm from '@/components/DecisionForm';
 import ManagementReport from '@/components/ManagementReport';
 import Analytics from '@/components/Analytics';
+import ControlCenter from '@/components/ControlCenter';
+import TreasuryLab from '@/components/TreasuryLab';
+import ScenarioLab from '@/components/ScenarioLab';
 
 function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onGroupChange, onCompanyChange, onClose, isOpen }) {
   const nav = (target) => { onNavigate(target); if (onClose) onClose(); };
+
+  const quickLinks = [
+    { id: 'dashboard', label: 'Overview', section: 'Core' },
+    { id: 'form', label: 'Decision Form', section: 'Core' },
+    { id: 'report', label: 'Management Report', section: 'Core' },
+    { id: 'analytics', label: 'Analytics', section: 'Core' },
+    { id: 'control', label: 'Control Center', section: 'Advanced' },
+    { id: 'treasury', label: 'Treasury Lab', section: 'Advanced' },
+    { id: 'scenario', label: 'Scenario Lab', section: 'Advanced' },
+  ];
+
   return (
     <aside className={`sidebar no-print${isOpen ? ' sidebar-open' : ''}`} role="navigation" aria-label="Main navigation">
       {/* Brand */}
@@ -47,6 +64,17 @@ function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onG
         <button className={`s-link${view === 'analytics' ? ' active' : ''}`} onClick={() => nav('analytics')} aria-current={view === 'analytics' ? 'page' : undefined}>
           <TrendingUp size={15} aria-hidden="true" /> Analytics
         </button>
+
+        <div className="s-section-label" style={{ marginTop: 8 }}>SIMULATION SUITE</div>
+        <button className={`s-link${view === 'control' ? ' active' : ''}`} onClick={() => nav('control')} aria-current={view === 'control' ? 'page' : undefined}>
+          <ShieldCheck size={15} aria-hidden="true" /> Executive Control Center
+        </button>
+        <button className={`s-link${view === 'treasury' ? ' active' : ''}`} onClick={() => nav('treasury')} aria-current={view === 'treasury' ? 'page' : undefined}>
+          <Landmark size={15} aria-hidden="true" /> Treasury & Working Capital
+        </button>
+        <button className={`s-link${view === 'scenario' ? ' active' : ''}`} onClick={() => nav('scenario')} aria-current={view === 'scenario' ? 'page' : undefined}>
+          <FlaskConical size={15} aria-hidden="true" /> Scenario & Forecast Lab
+        </button>
       </nav>
 
       <div style={{ height: 1, background: '#F1F5F9', margin: '8px 0' }} />
@@ -64,11 +92,47 @@ function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onG
           onChange={(e) => onCompanyChange(Number(e.target.value))} />
       </div>
 
+      <div style={{ height: 1, background: '#F1F5F9', margin: '8px 0' }} />
+
+      <div className="s-section-label">QUICK ACCESS</div>
+      <div style={{ padding: '2px 12px 10px' }}>
+        {quickLinks
+          .filter((q) => q.id !== 'report' || reportData)
+          .map((q) => (
+            <button
+              key={q.id}
+              onClick={() => nav(q.id)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: view === q.id ? '#EEF2FF' : '#FFFFFF',
+                color: view === q.id ? '#4338CA' : '#334155',
+                border: '1px solid #E2E8F0',
+                borderRadius: 8,
+                padding: '8px 10px',
+                marginBottom: 6,
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              <span>{q.label}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#64748B', fontSize: 10 }}>
+                {q.section} <ChevronRight size={12} />
+              </span>
+            </button>
+          ))}
+      </div>
+
       {/* Footer */}
       <div style={{ marginTop: 'auto', padding: '14px 16px', borderTop: '1px solid #F1F5F9' }}>
         <div style={{ fontSize: 10, color: '#94A3B8', lineHeight: 1.6 }}>
           <div style={{ fontWeight: 600, color: '#64748B' }}>Topaz VBE Simulation</div>
           <div>Business Strategy Game</div>
+          <div style={{ marginTop: 4 }}>
+            <span className="badge badge-indigo" style={{ fontSize: 9 }}>Feature Suite</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -101,6 +165,9 @@ export default function HomePage() {
     form: 'Submit Decisions',
     report: 'Management Report',
     analytics: 'Analytics',
+    control: 'Executive Control Center',
+    treasury: 'Treasury & Working Capital Lab',
+    scenario: 'Scenario & Forecast Lab',
   };
 
   return (
@@ -156,6 +223,15 @@ export default function HomePage() {
           {view === 'report' && <ManagementReport data={reportData} onNavigate={navigate} />}
           {view === 'analytics' && (
             <Analytics onNavigate={navigate} groupNumber={groupNumber} companyNumber={companyNumber} />
+          )}
+          {view === 'control' && (
+            <ControlCenter onNavigate={navigate} groupNumber={groupNumber} companyNumber={companyNumber} />
+          )}
+          {view === 'treasury' && (
+            <TreasuryLab groupNumber={groupNumber} companyNumber={companyNumber} />
+          )}
+          {view === 'scenario' && (
+            <ScenarioLab groupNumber={groupNumber} companyNumber={companyNumber} />
           )}
         </main>
       </div>
