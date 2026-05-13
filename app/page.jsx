@@ -115,10 +115,12 @@ function Sidebar({ view, onNavigate, reportData, groupNumber, companyNumber, onG
                 marginBottom: 6,
                 fontSize: 12,
                 cursor: 'pointer',
+                textAlign: 'left',
+                gap: 8,
               }}
             >
-              <span>{q.label}</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#64748B', fontSize: 10 }}>
+              <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.label}</span>
+              <span style={{ display: 'inline-flex', flexShrink: 0, alignItems: 'center', gap: 4, color: '#64748B', fontSize: 10 }}>
                 {q.section} <ChevronRight size={12} />
               </span>
             </button>
@@ -201,7 +203,7 @@ export default function HomePage() {
           <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open navigation menu">
             <Menu size={20} />
           </button>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+          <span className="mobile-title" style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
             Topaz VBE — {viewTitles[view] || ''}
           </span>
           <span style={{ width: 36 }} />

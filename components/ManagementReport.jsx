@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Printer } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Download, Printer } from 'lucide-react';
+import { exportElementToPdf } from '@/lib/pdf';
 
 const fmt = (n) => {
   if (n === null || n === undefined) return '\u2014';
@@ -36,6 +37,8 @@ const TABS = [
 
 export default function ManagementReport({ data, onNavigate }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isExporting, setIsExporting] = useState(false);
+  const reportRef = useRef(null);
 
   if (!data) {
     return (
@@ -100,9 +103,23 @@ export default function ManagementReport({ data, onNavigate }) {
   const ohTotal = ohEntries.reduce((s, [, v]) => s + v, 0);
 
   const handlePrint = () => window.print();
+  const handleExportPdf = async () => {
+    if (!reportRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        reportRef.current,
+        `management-report-g${groupNumber}-c${companyNumber}-y${year}-q${quarter}.pdf`
+      );
+    } catch (e) {
+      console.error('Management report PDF export failed:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+    <div ref={reportRef} style={{ maxWidth: 960, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0F172A', margin: 0 }}>Management Report</h1>
@@ -110,9 +127,14 @@ export default function ManagementReport({ data, onNavigate }) {
             Group {groupNumber} &middot; Company {companyNumber} &middot; Year {year} Q{quarter}
           </div>
         </div>
-        <button className="btn-ghost" onClick={handlePrint}>
-          <Printer size={14} /> Print
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+            <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+          </button>
+          <button className="btn-ghost" onClick={handlePrint}>
+            <Printer size={14} /> Print
+          </button>
+        </div>
       </div>
 
       <div className="r-tabs" style={{ marginBottom: 24 }}>

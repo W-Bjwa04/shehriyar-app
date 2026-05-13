@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getQuarters } from '@/lib/api';
-import { AlertTriangle, Shield, Target, Gauge } from 'lucide-react';
+import { AlertTriangle, Download, Shield, Target, Gauge } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { exportElementToPdf } from '@/lib/pdf';
 
 const fmt = (n) => {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
@@ -19,6 +20,7 @@ function healthClass(score) {
 export default function ControlCenter({ groupNumber, companyNumber, onNavigate }) {
   const [quarters, setQuarters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [checks, setChecks] = useState({
     pricingReview: false,
     staffingPlan: false,
@@ -26,6 +28,7 @@ export default function ControlCenter({ groupNumber, companyNumber, onNavigate }
     cashPlan: false,
     competitorScan: false,
   });
+  const centerRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -102,6 +105,21 @@ export default function ControlCenter({ groupNumber, companyNumber, onNavigate }
     { id: 'competitorScan', label: 'Review market intelligence before submit', owner: 'Strategy' },
   ];
 
+  const handleExportPdf = async () => {
+    if (!centerRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        centerRef.current,
+        `executive-control-center-g${groupNumber}-c${companyNumber}.pdf`
+      );
+    } catch (e) {
+      console.error('Control center PDF export failed:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (loading) return <div className="d-card">Loading control center...</div>;
 
   if (!latest) {
@@ -115,12 +133,17 @@ export default function ControlCenter({ groupNumber, companyNumber, onNavigate }
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Executive Control Center</h1>
-        <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
-          Group {groupNumber} | Company {companyNumber} | Year {latest.year} Q{latest.quarter}
+    <div ref={centerRef} style={{ maxWidth: 1080, margin: '0 auto' }}>
+      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Executive Control Center</h1>
+          <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+            Group {groupNumber} | Company {companyNumber} | Year {latest.year} Q{latest.quarter}
+          </div>
         </div>
+        <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+          <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+        </button>
       </div>
 
       <div className="grid-4" style={{ marginBottom: 20 }}>

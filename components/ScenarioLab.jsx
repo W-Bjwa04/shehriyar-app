@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getQuarters } from '@/lib/api';
+import { Download } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { exportElementToPdf } from '@/lib/pdf';
 
 const SHARES = 2000000;
 
@@ -21,6 +23,8 @@ function estimateSharePrice(baseSharePrice, epsPence, netMarginPct) {
 export default function ScenarioLab({ groupNumber, companyNumber }) {
   const [quarters, setQuarters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const scenarioRef = useRef(null);
 
   const [revChangePct, setRevChangePct] = useState(8);
   const [cosChangePct, setCosChangePct] = useState(-4);
@@ -76,6 +80,21 @@ export default function ScenarioLab({ groupNumber, companyNumber }) {
     { step: 'Net Profit', value: Math.round(projectedNetProfit / 1000) },
   ], [projectedRevenue, projectedCost, projectedOverheads, projectedTax, projectedNetProfit]);
 
+  const handleExportPdf = async () => {
+    if (!scenarioRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        scenarioRef.current,
+        `scenario-forecast-lab-g${groupNumber}-c${companyNumber}.pdf`
+      );
+    } catch (e) {
+      console.error('Scenario PDF export failed:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (loading) return <div className="d-card">Loading scenario lab...</div>;
 
   if (!latest) {
@@ -88,12 +107,17 @@ export default function ScenarioLab({ groupNumber, companyNumber }) {
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Scenario and Forecast Lab</h1>
-        <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
-          Strategy sandbox from baseline Year {latest.year} Q{latest.quarter}
+    <div ref={scenarioRef} style={{ maxWidth: 1080, margin: '0 auto' }}>
+      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Scenario and Forecast Lab</h1>
+          <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+            Strategy sandbox from baseline Year {latest.year} Q{latest.quarter}
+          </div>
         </div>
+        <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+          <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+        </button>
       </div>
 
       <div className="grid-2" style={{ marginBottom: 20 }}>

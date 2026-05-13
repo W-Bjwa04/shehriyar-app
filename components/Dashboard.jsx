@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getQuarters, resetSimulation, seedDatabase } from '@/lib/api';
 import { toast } from 'react-toastify';
-import { Database, Trash2, Plus, TrendingUp } from 'lucide-react';
+import { Database, Trash2, Plus, TrendingUp, Download } from 'lucide-react';
+import { exportElementToPdf } from '@/lib/pdf';
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -47,6 +48,8 @@ export default function Dashboard({ onNavigate, groupNumber, companyNumber, onGr
   const [quarters, setQuarters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const dashboardRef = useRef(null);
 
   useEffect(() => { loadQuarters(); }, [groupNumber, companyNumber]);
 
@@ -85,6 +88,22 @@ export default function Dashboard({ onNavigate, groupNumber, companyNumber, onGr
       loadQuarters();
     } catch (err) {
       toast.error('Failed to seed data');
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!dashboardRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        dashboardRef.current,
+        `overview-dashboard-g${groupNumber}-c${companyNumber}.pdf`
+      );
+    } catch (e) {
+      console.error('Dashboard PDF export failed:', e);
+      toast.error('Failed to export dashboard PDF');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -182,7 +201,7 @@ export default function Dashboard({ onNavigate, groupNumber, companyNumber, onGr
   };
 
   return (
-    <div style={{ width: '100%' }}>
+    <div ref={dashboardRef} style={{ width: '100%' }}>
       {/* A. Page Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
@@ -205,6 +224,9 @@ export default function Dashboard({ onNavigate, groupNumber, companyNumber, onGr
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+            <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+          </button>
           <button className="btn-ghost" onClick={handleSeed}>
             <Database size={14} /> Load Seed
           </button>

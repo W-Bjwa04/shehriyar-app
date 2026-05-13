@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getQuarters } from '@/lib/api';
+import { Download } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { exportElementToPdf } from '@/lib/pdf';
 
 const fmt = (n) => {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
@@ -12,9 +14,11 @@ const fmt = (n) => {
 export default function TreasuryLab({ groupNumber, companyNumber }) {
   const [quarters, setQuarters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [debtorImprove, setDebtorImprove] = useState(8);
   const [stockImprove, setStockImprove] = useState(6);
   const [creditorExtend, setCreditorExtend] = useState(7);
+  const treasuryRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -94,6 +98,21 @@ export default function TreasuryLab({ groupNumber, companyNumber }) {
     };
   }), [quarters]);
 
+  const handleExportPdf = async () => {
+    if (!treasuryRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        treasuryRef.current,
+        `treasury-working-capital-g${groupNumber}-c${companyNumber}.pdf`
+      );
+    } catch (e) {
+      console.error('Treasury PDF export failed:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (loading) return <div className="d-card">Loading treasury analytics...</div>;
 
   if (!latest) {
@@ -106,12 +125,17 @@ export default function TreasuryLab({ groupNumber, companyNumber }) {
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Treasury and Working Capital Lab</h1>
-        <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
-          Liquidity engineering tools for Year {latest.year} Q{latest.quarter}
+    <div ref={treasuryRef} style={{ maxWidth: 1080, margin: '0 auto' }}>
+      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24, color: '#0F172A' }}>Treasury and Working Capital Lab</h1>
+          <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+            Liquidity engineering tools for Year {latest.year} Q{latest.quarter}
+          </div>
         </div>
+        <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+          <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+        </button>
       </div>
 
       <div className="grid-5" style={{ marginBottom: 20 }}>

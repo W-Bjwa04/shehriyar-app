@@ -121,6 +121,7 @@ select.fi { cursor:pointer; background-color:#FFFFFF; }
 .hamburger-btn { background:transparent; border:1px solid #E2E8F0; cursor:pointer; padding:7px; border-radius:6px; color:#475569; display:flex; align-items:center; justify-content:center; }
 .hamburger-btn:hover { background:#F1F5F9; }
 .sidebar-backdrop { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.35); z-index:38; }
+.mobile-title { display:block; max-width:calc(100vw - 120px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* Responsive grid utilities */
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -137,15 +138,21 @@ select.fi { cursor:pointer; background-color:#FFFFFF; }
 
 /* Mobile — max 768px */
 @media (max-width:768px) {
-  .sidebar { transform:translateX(-100%); }
+  .sidebar { width:min(320px,88vw); min-width:min(320px,88vw); transform:translateX(-100%); }
   .sidebar.sidebar-open { transform:translateX(0); box-shadow:4px 0 32px rgba(0,0,0,0.18); }
   .sidebar-backdrop { display:block; }
   .mobile-topbar { display:flex; }
+  #sidebar-close-btn { display:flex !important; }
   .main-content { padding:16px !important; }
   .main-wrapper { margin-left:0 !important; }
   .d-card { padding:16px; }
+  .d-card-sm { padding:12px; }
   .stat-tile { padding:14px 16px; }
   .stat-tile-value { font-size:20px; }
+  .ratio-tile-value { font-size:18px; }
+  .btn-primary, .btn-ghost, .btn-danger { min-height:38px; }
+  .dt thead th, .dt tbody td, .dt tfoot td { padding:9px 10px; font-size:12px; }
+  .fi[type="range"] { padding:0; height:28px; }
   .grid-2,.grid-3,.grid-4,.grid-5 { grid-template-columns:1fr !important; }
   .step-col { min-width:44px; }
 }

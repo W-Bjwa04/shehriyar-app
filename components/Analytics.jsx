@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getQuarters } from '@/lib/api';
+import { Download } from 'lucide-react';
+import { exportElementToPdf } from '@/lib/pdf';
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -32,6 +34,8 @@ export default function Analytics({ groupNumber, companyNumber, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [qA, setQA] = useState(0);
   const [qB, setQB] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
+  const analyticsRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -136,14 +140,34 @@ export default function Analytics({ groupNumber, companyNumber, onNavigate }) {
     { label: 'Overhead Ratio %', key: 'overheadRatio', unit: '%', higherBetter: false },
   ];
 
+  const handleExportPdf = async () => {
+    if (!analyticsRef.current || isExporting) return;
+    try {
+      setIsExporting(true);
+      await exportElementToPdf(
+        analyticsRef.current,
+        `analytics-report-g${groupNumber}-c${companyNumber}.pdf`
+      );
+    } catch (e) {
+      console.error('Analytics PDF export failed:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+    <div ref={analyticsRef} style={{ maxWidth: 960, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0F172A', margin: 0 }}>Analytics</h1>
-        <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
-          Multi-quarter performance analysis &mdash; Group {groupNumber} &middot; Company {companyNumber}
+      <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0F172A', margin: 0 }}>Analytics</h1>
+          <div className="mono" style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+            Multi-quarter performance analysis &mdash; Group {groupNumber} &middot; Company {companyNumber}
+          </div>
         </div>
+        <button className="btn-ghost" onClick={handleExportPdf} disabled={isExporting}>
+          <Download size={14} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+        </button>
       </div>
 
       {/* ── A: Key Ratios LineChart ── */}
