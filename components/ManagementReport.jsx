@@ -99,6 +99,7 @@ export default function ManagementReport({ data, onNavigate }) {
   const capUtilR = hoursAvailR > 0 ? (hoursUsedR / hoursAvailR) * 100 : 0;
   const dividendRate = Number(dec?.dividendRate || 0);
   const dividendYield = sharePrice > 0 ? (dividendRate / sharePrice) * 100 : 0;
+  const oh = r?.overheads || {};
   const ohEntries = Object.entries(oh).filter(([, v]) => typeof v === 'number' && v > 0);
   const ohTotal = ohEntries.reduce((s, [, v]) => s + v, 0);
 
